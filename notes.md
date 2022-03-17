@@ -870,3 +870,5 @@ Puedes escribir el nombre de una ciudad, pero que cuando presiones enter, la app
 # Y JSX?
 
 Parece que escribimos HTML desde React, pero solo es manipulación del DOM 
+
+Hmmm

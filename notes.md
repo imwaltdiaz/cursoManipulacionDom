@@ -1,5 +1,7 @@
 # Que es el DOM?
 
+> Ojo, inicia todo con npm run start
+
 link: https://platzi.com/clases/dom/
 
 Todos los navegadores lo utilizan para renderizar y trabjar sobre una página web

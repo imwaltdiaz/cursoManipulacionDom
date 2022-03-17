@@ -475,6 +475,86 @@ Tip: Leer la documentación de la API de fetch() del navegador, es muy útil y p
 .
 https://developer.mozilla.org/es/docs/Web/API/Fetch_API
 
+```js
+const baseUrl = "https://platzi-avo.vercel.app";
+
+const appNode = document.querySelector('#app')
+
+appNode.addEventListener("click", (event) => {
+  if(event.target.nodeName === 'H2'){
+    window.alert("hola")
+  }
+} )
+
+//web api - fetch, es para traer recursos de una pagina web, solo podemos pasarle una url
+
+//1 - Conectarnos al servr
+//2 - Procesar la respuesta y convertirla en JSON
+//3 - JSON -> Data -> Renderizar la infor en el browser
+
+
+//Intl - Api de internacionalizacion
+//1 - Dar formato a fechas
+//2 - Dar formato a monedas
+
+const formatPrice = (price) => {
+  const newPrice = new window.Intl.NumberFormat('en-EN', {
+    style: 'currency',
+    currency: "USD",
+  }).format(price);
+
+  return newPrice;
+
+};
+
+
+window
+  .fetch(`${baseUrl}/api/avo`)
+  .then((response) => response.json())
+  .then ((responseJson) => {
+    const todosLosItems = []
+    responseJson.data.forEach((item) => {
+      //crear imagen
+      const image = document.createElement('img')
+      image.src = `${baseUrl}${item.image}` 
+      image.className = "h-16 w-16 md:h-24 md:w-24 rounded-full mx-auto md:mx-0 md:mr-6"
+
+      //crear titulo
+      const title = document.createElement('h2')
+      title.textContent = item.name
+      // title.style.fontSize = '3rem'<;  cambias elementos como un objeto o propiedad
+      //title.className = 'muy-grande';  creas clases para un nodo
+      title.className = 'text-lg'
+  
+
+      //crear precio
+      const price = document.createElement('div')
+      price.textContent = formatPrice(item.price);
+      price.className = "text-gray-600"
+      
+      
+      const priceAndTitle = document.createElement('div');
+      priceAndTitle.className = "text-center md:text-left";
+      priceAndTitle.append(title, price);
+      
+      const card = document.createElement("div");
+      card.className = "md:flex bg-white rounded-lg p-6 hover:bg-gray-300";
+      card.append(image, priceAndTitle)
+
+      todosLosItems.push(card)
+    });
+    appNode.append(...todosLosItems)
+  });
+
+
+//https://stackoverflow.com/questions/35835362/what-does-dollar-sign-and-curly-braces-mean-in-a-string-in-javascript
+
+//className, creas clases
+//classList, añades o borras clases
+
+//baseUrl: 'https:// robmvsk.github.io/workshop-1-fetch',
+ 
+```
 
 
 # Reaccionar a lo que sucede en el DOM
@@ -598,6 +678,139 @@ Haremos:
   2. Imagenes HTML -> JS
 
   3. Eventos - DOM 
+
+
+El indexjs
+```js
+import h from 'hyperscript'
+import { registerImage } from "./lazy";
+
+//Mi solución
+
+
+// const API = "https://randomfox.ca/floof/";
+
+// const appNode = document.querySelector('#pics');
+
+// const button = document.querySelector('#button-image');
+
+// const getImage = async() => {
+//   try{
+//     const response = await fetch(API);
+//     const responseJSON = await response.json();
+//     const url = responseJSON.image
+
+//     const container = document.createElement('div') 
+//     container.className = "p-4"
+
+//     const image = document.createElement('img') 
+//     image.src = url;
+//     image.className = "mx-auto" 
+//     image.width = "320"
+
+      
+//     container.append(image) 
+//     appNode.append(container)
+//   }
+//   catch (err) {
+//     console.log("Error", err)
+//   }
+// }
+// button.addEventListener("click", getImage)
+
+//La del profe  
+
+//crear imagen
+//agregar imagen
+
+const minimum = 1;
+const maximum = 122;
+const random = () => Math.floor(Math.random() * (maximum - minimum) + minimum) 
+
+const createImageNode = () => {
+
+  // const imagen = document.createElement('img')
+  // imagen.className = "mx-auto"
+  // imagen.width = "320"
+  // imagen.dataset.src = `https://randomfox.ca/images/${random()}.jpg` 
+  //No trabajamos con url para que no cargue directamente la pagina, el trabajo se lo dejamos a lazy loading
+  //dataset se usa para comunicar info entre html y js
+
+  //pero con hyperscript
+  const imagen = h('img.mx-auto', {
+    width: '320',
+    "data-src": `https://randomfox.ca/images/${random()}.jpg`,
+  })
+  const container = document.createElement ("div")
+  container.className = "p-4";
+  //Escribiendolo con hyperscript...
+  container.appendChild(imagen)
+  //en vez de appendChild usemos hyperscript
+
+
+  // const container = jsx('div.p-4.mt-3', imagen)
+  // jsx -> html (React), en React.createElement sería similar utilizando algo como...
+  // const container = <div className = "p-4 mt-3"><imagen /></div>
+
+
+
+
+  return container;
+};
+
+//Ahora una nueva img
+
+const nuevaImagen = createImageNode()
+const mountNode = document.getElementById("pics");
+
+const addImage = () => {
+  const newImage = createImageNode();
+  mountNode.append(newImage)
+  registerImage(newImage);
+};
+
+const addButton = document.querySelector('button')
+addButton.addEventListener("click", addImage)
+```
+
+el laxyjs
+```js
+//como es instancia se debe guardar en una variable
+// const observer = new IntersectionObserver(funcionQueHacerPorImagen)
+//se intersecta cuando se ve parcialmente una imagen oen su totalidad
+
+const isIntersecting = (entry) => {
+  return entry.isIntersecting //va a salir true dentro de la pantalla, false si no
+}
+
+const loadImage = (entry) => {
+  const container = entry.target //container (DIV)
+  //desregistra la imagen o deja de escucharla (unlisten)
+  const imagen = container.firstChild
+  const url = imagen.dataset.src
+ 
+  
+  //cargue imagen
+  imagen.src = url
+
+  observer.unobserve(container)
+  // imagen.src = `https://randomfox.ca/images/${random()}.jpg` 
+};
+
+
+const observer = new IntersectionObserver((entries) => {
+  entries
+    .filter(isIntersecting)
+    .forEach(loadImage)
+})
+
+
+export const registerImage = (imagen) => {
+  //IntersectionObservador -> observar (imagen), que escuche las imagenes
+  observer.observe(imagen)
+}
+```
+
 
 ## Intersection observer
 
